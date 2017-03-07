@@ -10,3 +10,41 @@
 .misc-pub-hm-post-repeat select {
 	margin: 0;
 }
+
+.misc-pub-hm-post-repeat span.dashicons,
+.misc-pub-hm-post-unpublish span.dashicons {
+	color: #82878c;
+}
+
+.misc-pub-hm-post-unpublish select {
+	height: 21px;
+	line-height: 14px;
+	padding: 0;
+	vertical-align: top;
+	font-size: 12px;
+}
+
+.misc-pub-hm-post-unpublish input {
+	border-width: 1px;
+	border-style: solid;
+	padding: 1px;
+	font-size: 12px;
+}
+
+#hm-post-unpublish {
+	padding-top: 5px;
+	line-height: 23px;
+}
+#hm-post-unpublish p {
+	margin: 8px 0 6px;
+}
+
+.misc-pub-hm-post-unpublish input.hm-post-unpublish-year {
+	width: 3.4em;
+}
+
+.misc-pub-hm-post-unpublish input#hm-post-unpublish-day,
+.misc-pub-hm-post-unpublish input#hm-post-unpublish-hour,
+.misc-pub-hm-post-unpublish input#hm-post-unpublish-minute {
+	width: 2em;
+}

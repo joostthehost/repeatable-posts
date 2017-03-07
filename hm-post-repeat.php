@@ -35,7 +35,8 @@ namespace HM\Post_Repeat;
 /**
  * Setup the actions and filters required by this class.
  */
-add_action( 'post_submitbox_misc_actions', __NAMESPACE__ . '\publish_box_ui' );
+add_action( 'post_submitbox_misc_actions', __NAMESPACE__ . '\publish_box_ui', 11 );
+add_action( 'post_submitbox_misc_actions', __NAMESPACE__ . '\unpublish_box_ui', 10 );
 add_action( 'save_post', __NAMESPACE__ . '\save_post_repeating_status', 10 );
 add_action( 'save_post', __NAMESPACE__ . '\create_next_repeat_post', 11 );
 add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\enqueue_scripts' );
@@ -106,6 +107,102 @@ function publish_box_ui() {
 		<?php endif; ?>
 
 	</div>
+
+<?php }
+
+/**
+ * Output the Post Unpublish UI that is shown in the Publish post meta box.
+ */
+function unpublish_box_ui() {
+
+	if ( ! in_array( get_post_type(), repeating_post_types() ) ) {
+		return;
+	} ?>
+
+    <div class="misc-pub-section misc-pub-hm-post-unpublish">
+
+        <span class="dashicons dashicons-calendar-alt"></span>
+
+		<?php esc_html_e( 'Unpublish', 'hm-post-repeat' ); ?>
+
+        <?php
+        $unpublish_timestamp     = get_unpublish_timestamp( get_the_id() );
+        $has_unpublish_timestamp = ! empty( $unpublish_timestamp );
+        if ( $has_unpublish_timestamp ) {
+	        $local_timestamp = strtotime( get_date_from_gmt( date( 'Y-m-d H:i:s', $unpublish_timestamp ) ) );
+	        /* translators: for date format, see https://secure.php.net/date */
+	        $datetime_format = __( 'M j, Y @ H:i', 'hm-post-repeat' );
+	        $unpublish_date  = date_i18n( $datetime_format, $local_timestamp );
+	        $date_parts      = array(
+		        'day'    => date( 'd', $local_timestamp ),
+		        'month'  => date( 'm', $local_timestamp ),
+		        'year'   => date( 'Y', $local_timestamp ),
+		        'hour'   => date( 'H', $local_timestamp ),
+		        'minute' => date( 'i', $local_timestamp )
+	        );
+        } else {
+	        $unpublish_date = '&mdash;';
+	        $date_parts     = array(
+		        'day'    => '',
+		        'month'  => '',
+		        'year'   => '',
+		        'hour'   => '',
+		        'minute' => ''
+	        );
+        }
+
+        ?>
+
+        <strong><?php echo $has_unpublish_timestamp ? esc_html( $unpublish_date['display'] ) : esc_html__( 'never', 'hm-post-repeat' ); ?></strong>
+
+        <a href="#hm-post-unpublish" class="edit-hm-post-unpublish hide-if-no-js"><span aria-hidden="true"><?php esc_html_e( 'Edit', 'hm-post-repeat' ); ?></span> <span class="screen-reader-text"><?php esc_html_e( 'Edit Repeat Settings', 'hm-post-repeat' ); ?></span></a>
+
+        <div class="hide-if-js" id="hm-post-unpublish">
+
+            <label>
+				<span class="screen-reader-text"><?php esc_html_e( 'Month', 'hm-post-repeat' ); ?></span>
+                <select name="hm-post-unpublish-month" id="" class="hm-post-unpublish-month">
+                    <option value=""><?php esc_html_e( '&mdash;', 'hm-post-repeat' ); ?></option>
+                    <?php
+                    global $wp_locale;
+                    for ( $i = 1; $i < 13; $i++ ) {
+                        $month_num = zeroise( $i, 2);
+                        $month_text = $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) );
+                        ?>
+                        <option value="<?php echo $month_num; ?>" <?php selected($date_parts['month'], $month_num); ?>><?php echo $month_text?></option>
+                    <?php
+                    }
+                    ?>
+                </select>
+            </label>
+            <label>
+				<span class="screen-reader-text"><?php esc_html_e( 'Day', 'hm-post-repeat' ); ?></span>
+				<input id="hm-post-unpublish-day" name="hm-post-unpublish-day" size="2" maxlength="2" autocomplete="off" type="text" value="<?php echo esc_attr( $date_parts['day'] ); ?>" />
+			</label>
+            ,
+            <label>
+				<span class="screen-reader-text"><?php esc_html_e( 'Year', 'hm-post-repeat' ); ?></span>
+				<input id="hm-post-unpublish-year" name="hm-post-unpublish-year" size="4" maxlength="4" autocomplete="off" type="text" value="<?php echo esc_attr( $date_parts['year'] ); ?>" />
+			</label>
+			@
+			<label>
+				<span class="screen-reader-text"><?php esc_html_e( 'Hour', 'hm-post-repeat' ); ?></span>
+				<input id="hm-post-unpublish-hour" name="hm-post-unpublish-hour" size="2" maxlength="2" autocomplete="off" type="text" value="<?php echo esc_attr( $date_parts['hour'] ); ?>" />
+			</label>
+			:
+			<label>
+				<span class="screen-reader-text"><?php esc_html_e( 'Minute', 'hm-post-repeat' ); ?></span>
+				<input id="hm-post-unpublish-minute" name="hm-post-unpublish-minute" size="2" maxlength="2" autocomplete="off" type="text" value="<?php echo esc_attr( $date_parts['minute'] ); ?>" />
+			</label>
+
+            <p>
+                <a href="#hm-post-unpublish" class="save-post-hm-post-unpublish hide-if-no-js button"><?php esc_html_e( 'OK', 'hm-post-repeat' ); ?></a>
+                <a href="#hm-post-unpublish" class="cancel-post-hm-post-unpublish hide-if-no-js button-cancel"><?php esc_html_e( 'Cancel', 'hm-post-repeat' ); ?></a>
+            </p>
+
+        </div>
+
+    </div>
 
 <?php }
 
@@ -318,6 +415,19 @@ function get_repeating_schedules() {
 
 	return $schedules;
 
+}
+
+/**
+ * Get the unpublish timestamp of the given post_id.
+ *
+ * @param int $post_id The id of the post you want to check.
+ * @return array|null The timestamp of the unpublish date/time, or null if invalid.
+ */
+function get_unpublish_timestamp( $post_id ) {
+
+	$unpublish_timestamp = get_post_meta( $post_id, 'hm-post-unpublish', true );
+
+	return $unpublish_timestamp;
 }
 
 /**
